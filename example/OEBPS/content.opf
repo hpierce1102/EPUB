@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<package version="2.0" xmlns="http://www.idpf.org/2007/opf" unique-identifier="bookid">
+	<metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
+		<meta name="generator" content="Adobe InDesign 9.2.1" />
+		<meta name="cover" content="x203.png" />
+		<dc:title>test</dc:title>
+		<dc:creator></dc:creator>
+		<dc:subject></dc:subject>
+		<dc:description></dc:description>
+		<dc:publisher></dc:publisher>
+		<dc:date>2014-04-27T16:09:35Z</dc:date>
+		<dc:source></dc:source>
+		<dc:relation></dc:relation>
+		<dc:coverage></dc:coverage>
+		<dc:rights></dc:rights>
+		<dc:language>en-US</dc:language>
+		<dc:identifier id="bookid">urn:uuid:29d919dd-24f5-4384-be78-b447c9dc299b</dc:identifier>
+	</metadata>
+	<manifest>
+		<item id="Untitled-4" href="Untitled-4.xhtml" media-type="application/xhtml+xml" />
+		<item id="ncx" href="toc.ncx" media-type="application/x-dtbncx+xml" />
+		<item id="idGeneratedStyles.css" href="css/idGeneratedStyles.css" media-type="text/css" />
+		<item id="MinionPro-Regular.otf" href="font/MinionPro-Regular.otf" media-type="application/vnd.ms-opentype" />
+		<item id="x203.png" href="image/203.png" media-type="image/png" />
+	</manifest>
+	<spine toc="ncx">
+		<itemref idref="Untitled-4" />
+	</spine>
+</package>
