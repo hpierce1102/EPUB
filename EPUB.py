@@ -1,8 +1,11 @@
 import zipfile
 import os
 import zlib
-import sys
-import getopt
+#import sys
+#import getopt
+import shutil
+from mako.template import Template #http://www.makotemplates.org/
+
 
 class EPUB:
 	###########################################################
@@ -19,8 +22,14 @@ class EPUB:
 	#self.log         : list of all writes and filters the 
 	#list               compiler creates
 	#                   
+	#self.acceptable  : files with this extention will be
+	#tuple				personalized when self.personalize()
+	#					is run. This should be changed if 
+	#					other file formats are needed.
+	#
 	###########################################################
 	def __init__(self, path):
+		path = os.path.abspath(path)
 		self.fullpath = path
 
 		found = False
@@ -42,9 +51,16 @@ class EPUB:
 			last = path.rfind('/')
 			path = path[0:last]
 		self.base = path
-		self.filename = path[path.rfind('/') + 1:last]
+		#self.filename = path[last:]
 		self.baseparent = path[0:path.rfind('/')]
 		self.log = list()
+		self.acceptable = (
+			'.xhtml',
+			'.html',
+			'.xml',
+			'.js',
+			'.css'
+		)
 
 	#self.compile() uses the base file to create an EPUB file.
 	# It accomplishes this by creating a zip file where the
@@ -56,32 +72,86 @@ class EPUB:
 	def compile(self):
 
 		#Create new EPUB file, overwirte old EPUB from the same files
-		epub = zipfile.ZipFile(self.base + '.epub', mode ='w')
+		try:
+			loc = self.tempdir
+		except:
+			loc = self.base
+
+		epub = zipfile.ZipFile(loc + '.epub', mode ='w')
 
 		#Fill new EPUB zip file with all of the pages and whatnot.
-		start = len(self.base) + 1
-		for root, dirs, files in os.walk(self.base):
+		start = len(loc) + 1
+		for root, dirs, files in os.walk(loc):
 		        for file in files:
+		            unzipped = os.path.join(root, file)
 		            if file[0] == '.':
 		                self.log.append('Filtered: ' + file)
 		                continue
 		            if file == 'mimetype':
-		                epub.write(os.path.join(root, file), arcname=root[start:] + file)
+		                epub.write(unzipped, arcname=root[start:] + file)
 		            else:
-		                epub.write(os.path.join(root, file), arcname=root[start:] + '/' + file, compress_type=zipfile.ZIP_DEFLATED)
+		                epub.write(unzipped, arcname=root[start:] + '/' + file, compress_type=zipfile.ZIP_DEFLATED)
 		            self.log.append('Wrote: ' + root[start:] + '/' + file)
 		epub.close()
-		return self.base + '.epub'
+		return loc + '.epub'
 
+	def personalize(self, **data):
+		self.tempdir = self.baseparent + '/temp'
+		if not os.path.exists(self.tempdir):
+			os.makedirs(self.tempdir)
+
+		start = len(self.base) + 1
+		for root, dirs, files in os.walk(self.base):
+			for file in files:
+				
+				last = file.rfind('.')
+
+				newcopy = self.tempdir+ '/' + root[start:] + '/' + file
+
+				if not os.path.exists('../' + newcopy):
+					try:
+						os.makedirs(os.path.dirname(newcopy))
+					except OSError:
+						pass
+				
+				#Only some files should be personalized
+				#Change the files in self.acceptable
+				if file[last:] in self.acceptable:
+					template = Template(filename=os.path.join(root, file))
+					output = template.render(**data)
+
+					copy = open(newcopy, 'w')
+					copy.write(output)
+					copy.close()
+				else:
+					shutil.copy(os.path.join(root,file), newcopy)
+
+
+
+		return self.tempdir
+
+				#find some other way to get the middle dirs#####################################################
+
+
+
+				
+
+
+			#print(root)
+			
+			#template = Template(filename=unzipped_path)
+			#rendered = template.render()
+
+	
 if __name__ == "__main__":
-	arg = getopt.getopt(sys.argv, '')
-	try:
-		dir = arg[1][1]
-	except IndexError:
-		sys.exit('Failed: No argument supplied')
-	epub = EPUB(dir)
-	os.system('open \''+ epub.compile() +'\'')
-	#print(epub.base)
-	#print(epub.filename)
+
+	epub = EPUB('example')
+
+	epub.personalize(name='Hayden')
+	epub.compile()
+
+	#os.system('open \''+ epub.compile(name='Hayden') +'\'')
+
+
 	for ele in epub.log:
 		print(ele)
